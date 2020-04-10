@@ -366,7 +366,8 @@ def idol_btn():
             warning()
 
 #アイドル絞り込み関数
-def tintin_select(min_get,max_get,seiheki,list_idols,flag):
+def tintin_select(min_get,max_get,seiheki,list_idols):
+    global flag
     min_place=0
     max_place=0
     #min=max
@@ -390,8 +391,9 @@ def tintin_select(min_get,max_get,seiheki,list_idols,flag):
 
     #リストの中身がゼロになるとき
     if(min_place==len(list_idols)-1 or max_place==0):
-        #作成途中
-        print("")
+        warning()
+        flag="true"
+        return
     #ならないとき
     marge=len(list_idols)-(max_place-min_place)
     if(min_place!=len(list_idols)-1 and max_place!=0):
@@ -406,6 +408,7 @@ def tintin_select(min_get,max_get,seiheki,list_idols,flag):
 
 #絞り込みボタン
 def profile_btn():
+    global flag
     flag="false"
     list_idols=idols
     for j in range(len(chk_bln)):
@@ -421,7 +424,7 @@ def profile_btn():
                         swap=list_idols[s]
                         list_idols[s]=list_idols[t]
                         list_idols[t]=swap
-            tintin_select(min_get[j],max_get[j],j+1,list_idols,flag)
+            tintin_select(min_get[j],max_get[j],j+1,list_idols)
             if(flag=="true"):
                 break
     if(flag=="true"):
@@ -454,8 +457,6 @@ def change_order(list_idols):
                     list_idols[s]=list_idols[t]
                     list_idols[t]=swap  
     global idols_name
-
-    
     for i in range(len(idols_name)):
         idols_name[i].destroy()
     idol_button(list_idols)
@@ -502,7 +503,6 @@ def idol_button(list_idols):
     
     
 #絞り込み結果表示
-#作成段階
 def idol_show(list_idols):
     #ウィンドウ表示
     root.destroy()
