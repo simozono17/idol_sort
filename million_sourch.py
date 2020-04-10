@@ -2,26 +2,37 @@ import tkinter as tk
 import tkinter.ttk as ttk
 from functools import partial
 import json
+import re
+from PIL import Image, ImageTk
 
 idol_raw_data = None
 idols = []
-
+autocompleteList =[]
 with open("idol.json",encoding='UTF-8') as file:
     idol_raw_data = json.load(file)
     file.close()
-    
+with open("name.json") as file:
+    idol_raw_data2 = json.load(file)
+    file.close()    
 #アイドルの情報
 class idol():
-    def __init__(self, name, age,height,weight,b,w,h,birth,blood,dh,hobby,skill,like,born,color):
-        self.data=[name, age,height,weight,b,w,h,birth,blood,dh,hobby,skill,like,born,color]
+    def __init__(self, name, age,height,weight,b,w,h,birth,blood,dh,hobby,skill,like,born,color,image):
+        self.data=[name, age,height,weight,b,w,h,birth,blood,dh,hobby,skill,like,born,color,image]
 
 for i in idol_raw_data:
     idols.append(
         idol(i["name"], float(i["age"][:-1]), float(i["height"][:-2]), float(i["weight"][:-2]),
-             float(i["b"][:-2]), float(i["w"][:-2]), float(i["h"][:-2]), i["birth"], i["blood"], i["dh"], i["hobby"], i["skill"], i["like"],i["born"],i["color"])
+             float(i["b"][:-2]), float(i["w"][:-2]), float(i["h"][:-2]), i["birth"], i["blood"], i["dh"], i["hobby"], i["skill"], i["like"],i["born"],i["color"],"temp.png")
     )
-
-
+#サジェスト用リスト
+for i in idol_raw_data2:
+    autocompleteList.append(i["name1"]) 
+for i in idol_raw_data2:
+    autocompleteList.append(i["name2"])       
+for i in idol_raw_data2:
+    autocompleteList.append(i["name3"])  
+for i in range(52):
+    idols[i].data[15]=idol_raw_data2[i]["name4"]
 # Tkクラス生成
 root = tk.Tk()
 # 画面サイズ
@@ -29,6 +40,112 @@ root.geometry('800x500')
 # 画面タイトル
 root.title('Millionlive!プロフィール検索')
 
+#名前検索、サジェスト
+class AutocompleteEntry(tk.Entry):
+    def __init__(self, autocompleteList, *args, **kwargs):
+
+        # Listbox length
+        if 'listboxLength' in kwargs:
+            self.listboxLength = kwargs['listboxLength']
+            del kwargs['listboxLength']
+        else:
+            self.listboxLength = 8
+
+        # Custom matches function
+        if 'matchesFunction' in kwargs:
+            self.matchesFunction = kwargs['matchesFunction']
+            del kwargs['matchesFunction']
+        else:
+            def matches(fieldValue, acListEntry):
+                pattern = re.compile('.*' + re.escape(fieldValue) + '.*', re.IGNORECASE)
+                return re.match(pattern, acListEntry)
+                
+            self.matchesFunction = matches
+
+        
+        tk.Entry.__init__(self, *args, **kwargs)
+        self.focus()
+
+        self.autocompleteList = autocompleteList
+        
+        self.var = self["textvariable"]
+        if self.var == '':
+            self.var = self["textvariable"] = tk.StringVar()
+
+        self.var.trace('w', self.changed)
+        self.bind("<Return>", self.selection)
+        self.bind("<Up>", self.moveUp)
+        self.bind("<Down>", self.moveDown)
+        
+        self.listboxUp = False
+
+    def changed(self, name, index, mode):
+        if self.var.get() == '':
+            if self.listboxUp:
+                self.listbox.destroy()
+                self.listboxUp = False
+        else:
+            words = self.comparison()
+            if words:
+                if not self.listboxUp:
+                    self.listbox = tk.Listbox(width=self["width"], height=self.listboxLength)
+                    self.listbox.bind("<Button-1>", self.selection)
+                    self.listbox.bind("<Return>", self.selection)
+                    self.listbox.place(x=self.winfo_x(), y=self.winfo_y() + self.winfo_height())
+                    self.listboxUp = True
+                
+                self.listbox.delete(0, tk.END)
+                for w in words:
+                    self.listbox.insert(tk.END,w)
+            else:
+                if self.listboxUp:
+                    self.listbox.destroy()
+                    self.listboxUp = False
+        
+    def selection(self, event):
+        if self.listboxUp:
+            self.var.set(self.listbox.get(tk.ACTIVE))
+            self.listbox.destroy()
+            self.listboxUp = False
+            self.icursor(tk.END)
+
+    def moveUp(self, event):
+        if self.listboxUp:
+            if self.listbox.curselection() == ():
+                index = '0'
+            else:
+                index = self.listbox.curselection()[0]
+                
+            if index != '0':                
+                self.listbox.selection_clear(first=index)
+                index = str(int(index) - 1)
+                
+                self.listbox.see(index) # Scroll!
+                self.listbox.selection_set(first=index)
+                self.listbox.activate(index)
+
+    def moveDown(self, event):
+        if self.listboxUp:
+            if self.listbox.curselection() == ():
+                index = '0'
+            else:
+                index = self.listbox.curselection()[0]
+                
+            if index != tk.END:                        
+                self.listbox.selection_clear(first=index)
+                index = str(int(index) + 1)
+                
+                self.listbox.see(index) # Scroll!
+                self.listbox.selection_set(first=index)
+                self.listbox.activate(index) 
+
+    def comparison(self):
+        return [ w for w in self.autocompleteList if self.matchesFunction(self.var.get(), w) ]
+if __name__ == '__main__':
+
+    def matches(fieldValue, acListEntry):
+        pattern = re.compile(re.escape(fieldValue) + '.*', re.IGNORECASE)
+        return re.match(pattern, acListEntry)
 
 # チェックボタンのラベルをリスト化する
 chk_txt = ['年齢','身長','体重','バスト','ウェスト','ヒップ']
@@ -52,7 +169,7 @@ for i in range(len(chk_txt)):
 name_label=tk.Label(text="アイドル名で検索",font=("",16))
 name_label.place(x=50,y=50)
 
-name_box=tk.Entry(width=15,font=("",20))
+name_box=AutocompleteEntry(autocompleteList, root, listboxLength=6, width=20, matchesFunction=matches,font=("",18))
 name_box.place(x=50,y=130)
 
 
@@ -216,25 +333,32 @@ max_box[5].place(x=kijun_x+x_marge*2, y=kijun_y+y_marge*entry_var)
 #並び替えの時に使う
 show_size=[]
 count=0
-
+image_hosyu=[]
 #アイドルのプロフィールを表示する
 def idol_pr_show(idol):
     #新規ウィンドウの中身
     rooting=tk.Tk()
     # 画面サイズ
-    rooting.geometry('400x600')
+    rooting.geometry('700x600')
     # 画面タイトル
     rooting.title('アイドルプロフィール')
     rooting.configure(bg=idol.data[14])
     profile_show=tk.Label(rooting,text="\n\n"+idol.data[0]+"\n\n年齢:"+str(idol.data[1])+"歳\n\n身長:"+str(idol.data[2])+"cm\n\n体重"+str(idol.data[3])+"kg\n\nB:"+str(idol.data[4])+"cm\n\nW:"+str(idol.data[5])+"cm\n\nH:"+str(idol.data[6])+"cm\n\n誕生日:"+idol.data[7]+"\n\n血液型:"+idol.data[8]+"\n\n利き手:"+idol.data[9]+"\n\n趣味:"+idol.data[10]+"\n\n特技:"+idol.data[11]+"\n\n好きなもの:"+idol.data[12]+"\n\n出身地:"+idol.data[13],font=("",14),background=idol.data[14])
-    profile_show.pack()
+    # 画像を開く
+    image = Image.open(idol.data[15])
+    # tkinter.PhotoImage ではなく ImageTk.PhotoImage() を使う
+    photo = ImageTk.PhotoImage(image, master=rooting)
+    image_hosyu.append(photo)
+    tk.Label(rooting, image = photo).place(x=30,y=130)
+    profile_show.place(x=400,y=30)
+    
 
 #アイドルボタンの挙動
 def idol_btn():
     for i in range(0,len(idols)):
         idol_name=name_box.get()
         #アイドル検索の方で新しいウィンドウを作る
-        if(idol_name==idols[i].data[0]):
+        if(idol_name==idols[i].data[0] or idol_name==autocompleteList[i] or idol_name==autocompleteList[i+52] or idol_name==autocompleteList[i+52*2]):
             idol_pr_show(idols[i])
             break
         #名前全員不一致
@@ -339,7 +463,7 @@ def change_order(list_idols):
     global show_size
     global count
     placex=70
-    placey=170
+    placey=220
     if(count!=0):
         for i in range(len(show_size)):
             show_size[i].place_forget()
@@ -369,11 +493,11 @@ def idol_button(list_idols):
             if(list_idols[i].data[0]=="エミリースチュアート"):
                 list_idols[i].data[0]="エミリー"
             idols_name.append(idol)
-            idols_name[i]=tk.Button(command=partial(idol_pr_show,list_idols[i]),text=list_idols[i].data[0],background=list_idols[i].data[14],font=("",14))
+            idols_name[i]=tk.Button(root2,command=partial(idol_pr_show,list_idols[i]),text=list_idols[i].data[0],background=list_idols[i].data[14],font=("",14))
             #表示の時は戻す
             if(list_idols[i].data[0]=="エミリー"):
                 list_idols[i].data[0]="エミリースチュアート"
-            idols_name[i].place(x=50+(i%7)*160,y=130+int((i/7))*100)
+            idols_name[i].place(x=50+(i%7)*160,y=180+int((i/7))*100)
             
     
     
@@ -384,23 +508,44 @@ def idol_show(list_idols):
     root.destroy()
     #新規ウィンドウの中身
     global root2
-    root2=tk.Tk()
+    root3=tk.Tk()
     # 画面サイズ
-    root2.geometry('1200x600')
+    root3.geometry('1200x600')
     # 画面タイトル
-    root2.title('絞り込み結果')
+    root3.title('絞り込み結果')
+    
+    # Canvas Widget を生成
+    canvas = tk.Canvas(root3)
+
+    # Top Widget上に Scrollbar を生成して配置
+    bar = tk.Scrollbar(root3, orient=tk.VERTICAL)
+    bar.pack(side=tk.RIGHT, fill=tk.Y)
+    bar.config(command=canvas.yview) # ScrollbarでCanvasを制御
+
+    # Canvas Widget をTopWidget上に配置
+    canvas.config(yscrollcommand=bar.set) # Canvasのサイズ変更をScrollbarに通知
+    canvas.config(scrollregion=(0,0,1200,1000)) #スクロール範囲
+    #ホイールでも動かす
+    canvas.bind_all("<MouseWheel>", lambda eve:canvas.yview_scroll(int(-eve.delta/120), 'units'))
+    canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+    # Frame Widgetを 生成
+    root2 = tk.Frame(canvas)
+
+    # Frame Widgetを Canvas Widget上に配置（）
+    canvas.create_window((0,0), window=root2, anchor=tk.NW, width=1200, height=1000)
+
+
     #アイドルの名前を表示
     condition=[]
     global idols_name
     idols_name = []
-    idol_button(list_idols)
-            
+    idol_button(list_idols)           
     #並び変え用 
     frame=tk.Frame(root2,width=700, height=100, bg="pink")
     frame.place(x=250,y=10)
-    label=tk.Label(text="並び変え",font=("",20),bg="yellow",fg="blue")
+    label=tk.Label(root2,text="並び変え",font=("",20),bg="yellow",fg="blue")
     label.place(x=255,y=15)
-    
     combo_placex=400
     combo_placey=50
     #種類を選ぶドロップダウンメニュー
@@ -434,9 +579,7 @@ def idol_show(list_idols):
     change_btn=tk.Button(root2,command=partial(change_order,list_idols),text="実行",font=("",18))
     change_btn.place(x=combo_placex+400,y=combo_placey-10)
     
-    
-    
-    root2.mainloop()
+    root3.mainloop()
     
 #警告メッセージ表示
 def warning():
