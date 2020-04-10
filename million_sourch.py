@@ -16,13 +16,13 @@ with open("name.json") as file:
     file.close()    
 #アイドルの情報
 class idol():
-    def __init__(self, name, age,height,weight,b,w,h,birth,blood,dh,hobby,skill,like,born,color,image):
-        self.data=[name, age,height,weight,b,w,h,birth,blood,dh,hobby,skill,like,born,color,image]
+    def __init__(self, name, age,height,weight,b,w,h,birth,blood,dh,hobby,skill,like,born,color,image,st):
+        self.data=[name, age,height,weight,b,w,h,birth,blood,dh,hobby,skill,like,born,color,image,st]
 
 for i in idol_raw_data:
     idols.append(
         idol(i["name"], float(i["age"][:-1]), float(i["height"][:-2]), float(i["weight"][:-2]),
-             float(i["b"][:-2]), float(i["w"][:-2]), float(i["h"][:-2]), i["birth"], i["blood"], i["dh"], i["hobby"], i["skill"], i["like"],i["born"],i["color"],"temp.png")
+             float(i["b"][:-2]), float(i["w"][:-2]), float(i["h"][:-2]), i["birth"], i["blood"], i["dh"], i["hobby"], i["skill"], i["like"],i["born"],i["color"],"temp.png",i["status"])
     )
 #サジェスト用リスト
 for i in idol_raw_data2:
@@ -36,7 +36,7 @@ for i in range(52):
 # Tkクラス生成
 root = tk.Tk()
 # 画面サイズ
-root.geometry('800x500')
+root.geometry('800x550')
 # 画面タイトル
 root.title('Millionlive!プロフィール検索')
 
@@ -148,7 +148,7 @@ if __name__ == '__main__':
         return re.match(pattern, acListEntry)
 
 # チェックボタンのラベルをリスト化する
-chk_txt = ['年齢','身長','体重','バスト','ウェスト','ヒップ']
+chk_txt = ['年齢','身長','体重','バスト','ウェスト','ヒップ','学生区分']
 chk_bln = {}
 #位置を決める変数
 kijun_x=550
@@ -208,7 +208,10 @@ def select_min5(event):
     min_get[5]=float(cb_min_st[5].get())
 def select_max5(event):
     max_get[5]=float(cb_max_st[5].get())
-    
+
+def select_status(event):
+    global status_get
+    status_get=status_var.get()
 #値入力,sはsizeのs
 box_s=12
 nami_s=18
@@ -219,7 +222,6 @@ min_get=[0,0,0,0,0,0]
 max_get=[0,0,0,0,0,0]
 min_box=[]
 max_box=[]
-
 cb_min_st.append(tk.StringVar())
 cb_max_st.append(tk.StringVar())
 
@@ -330,6 +332,16 @@ max_box[5]["values"]=("73","74","75","76","77","78","79","80","81","82","83","84
 max_box[5].set("上限")
 max_box[5].place(x=kijun_x+x_marge*2, y=kijun_y+y_marge*entry_var)
 
+entry_var=entry_var+1
+
+status_var=tk.StringVar()
+
+status=ttk.Combobox(root, textvariable=status_var,state='readonly',font=("",box_s+4),width=8)
+status.bind('<<ComboboxSelected>>' , select_status)
+status["values"]=("小学生","中学生","高校生","その他")
+status.set("区分")
+status.place(x=kijun_x+x_marge, y=kijun_y+y_marge*entry_var)
+
 #並び替えの時に使う
 show_size=[]
 count=0
@@ -411,7 +423,7 @@ def profile_btn():
     global flag
     flag="false"
     list_idols=idols
-    for j in range(len(chk_bln)):
+    for j in range(len(chk_bln)-1):
         if chk_bln[j].get():
             #min>max ありえない話！
             if(int(min_get[j])>int(max_get[j])):
@@ -427,6 +439,16 @@ def profile_btn():
             tintin_select(min_get[j],max_get[j],j+1,list_idols)
             if(flag=="true"):
                 break
+    if(flag=="true"):
+        warning()
+        return
+    if chk_bln[6].get():
+        length=len(list_idols)
+        for i in range(length):
+            if(list_idols[length-1-i].data[16]!=status_get):
+                list_idols.pop(length-1-i)
+        if(len(list_idols)==0):
+            flag="true"
     if(flag=="true"):
         warning()
         return
@@ -590,7 +612,7 @@ button1 = tk.Button(text="検索",command=idol_btn,font=("",15))
 button1.place(x=250, y=200)
 
 button2 = tk.Button(text="検索",command=profile_btn,font=("",15))
-button2.place(x=kijun_x+100, y=kijun_y+300)
+button2.place(x=kijun_x+150, y=kijun_y+350)
 
 
 root.mainloop()
