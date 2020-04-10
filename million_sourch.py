@@ -32,12 +32,19 @@ root.title('Millionlive!プロフィール検索')
 
 # チェックボタンのラベルをリスト化する
 chk_txt = ['年齢','身長','体重','バスト','ウェスト','ヒップ']
+chk_bln = {}
+#位置を決める変数
+kijun_x=550
+kijun_y=105
+x_marge=60
+y_marge=50
+entry_var=0
 # チェックボックスON/OFFの状態
 # チェックボタンを動的に作成して配置
 for i in range(len(chk_txt)):
     chk_bln[i] = tk.BooleanVar()
     chk = tk.Checkbutton(root, variable=chk_bln[i], text=chk_txt[i],font=("",14)) 
-    chk.place(x=check-100, y=kijun_profile + (i * 50))
+    chk.place(x=kijun_x-100, y=kijun_y + (i * 50))
     
     
     
@@ -52,7 +59,7 @@ name_box.place(x=50,y=130)
 
 #プロフィールで検索の部分
 profile_label=tk.Label(text="プロフィールから検索",font=("",16))
-profile_label.place(x=check-150,y=50)
+profile_label.place(x=kijun_x-150,y=50)
 
 #ドロップダウンの値を取得
 def select_min0(event):
@@ -98,12 +105,6 @@ max_box=[]
 
 cb_min_st.append(tk.StringVar())
 cb_max_st.append(tk.StringVar())
-    
-kijun_x=550
-kijun_y=105
-x_marge=60
-y_marge=50
-entry_var=0
 
 
 #年齢の下限上限入力    
@@ -446,7 +447,7 @@ button1 = tk.Button(text="検索",command=idol_btn,font=("",15))
 button1.place(x=250, y=200)
 
 button2 = tk.Button(text="検索",command=profile_btn,font=("",15))
-button2.place(x=check+100, y=kijun_profile+300)
+button2.place(x=kijun_x+100, y=kijun_y+300)
 
 
 root.mainloop()
