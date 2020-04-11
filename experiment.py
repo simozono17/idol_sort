@@ -398,6 +398,10 @@ def mainroot():
     root.geometry('800x550')
     # 画面タイトル
     root.title('Millionlive!プロフィール検索')
+    global min_get
+    min_get=[0,0,0,0,0,0]
+    global max_get
+    max_get=[0,0,0,0,0,0]
     #ドロップダウンの値を取得
     def select_min0(event):
         min_get[0]=float(cb_min_st[0].get())
@@ -517,8 +521,7 @@ def mainroot():
     cb_max_st=[tk.StringVar(),tk.StringVar(),tk.StringVar(),tk.StringVar(),tk.StringVar(),tk.StringVar()]
     min_box=[]
     max_box=[]
-    global min_get
-    global max_get
+
     cb_min_st.append(tk.StringVar())
     cb_max_st.append(tk.StringVar())
 
