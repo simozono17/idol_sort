@@ -5,35 +5,12 @@ import json
 import re
 from PIL import Image, ImageTk
 
-idol_raw_data = None
-idols = []
+   
+# チェックボタンのラベルをリスト化する
+chk_txt = ['年齢','身長','体重','バスト','ウェスト','ヒップ','学生区分']
+
+
 autocompleteList =[]
-
-with open("idol.json",encoding='UTF-8') as file:
-    idol_raw_data = json.load(file)
-    file.close()
-with open("name.json") as file:
-    idol_raw_data2 = json.load(file)
-    file.close()    
-#アイドルの情報
-class idol():
-    def __init__(self, name, age,height,weight,b,w,h,birth,blood,dh,hobby,skill,like,born,color,image,st):
-        self.data=[name, age,height,weight,b,w,h,birth,blood,dh,hobby,skill,like,born,color,image,st]
-
-for i in idol_raw_data:
-    idols.append(
-        idol(i["name"], float(i["age"][:-1]), float(i["height"][:-2]), float(i["weight"][:-2]),
-             float(i["b"][:-2]), float(i["w"][:-2]), float(i["h"][:-2]), i["birth"], i["blood"], i["dh"], i["hobby"], i["skill"], i["like"],i["born"],i["color"],"temp.png",i["status"])
-    )
-#サジェスト用リスト
-for i in idol_raw_data2:
-    autocompleteList.append(i["name1"]) 
-for i in idol_raw_data2:
-    autocompleteList.append(i["name2"])       
-for i in idol_raw_data2:
-    autocompleteList.append(i["name3"])  
-for i in range(52):
-    idols[i].data[15]=idol_raw_data2[i]["name4"]
 
 
 #名前検索、サジェスト
@@ -175,10 +152,11 @@ def idol_pr_show(idol):
     
 
 #アイドルボタンの挙動
-def idol_btn(name_box):
+def idol_btn(name_box,idols):
     for i in range(0,len(idols)):
         idol_name=name_box.get()
         #アイドル検索の方で新しいウィンドウを作る
+        global autocompleteList
         if(idol_name==idols[i].data[0] or idol_name==autocompleteList[i] or idol_name==autocompleteList[i+52] or idol_name==autocompleteList[i+52*2]):
             idol_pr_show(idols[i])
             break
@@ -234,6 +212,7 @@ def tintin_select(min_get,max_get,seiheki,list_idols):
 def change_order(list_idols):
     global kind
     global up_or_down
+    global chk_txt
     orderby=0
     for i in range(len(chk_txt)):
         if(chk_txt[i]==kind):
@@ -389,9 +368,38 @@ def idol_show(list_idols,root):
 def warning():
     message=tk.messagebox.showinfo("警告","条件に合うアイドルは存在しません")
     
-n=-1
+kaisuu=0
 global list_idols
 def mainroot():
+    idol_raw_data = None
+    global autocompleteList
+    global kaisuu
+    with open("idol.json",encoding='UTF-8') as file:
+        idol_raw_data = json.load(file)
+        file.close()
+    with open("name.json") as file:
+        idol_raw_data2 = json.load(file)
+        file.close() 
+    idols=[]
+    #アイドルの情報
+    class idol():
+        def __init__(self, name, age,height,weight,b,w,h,birth,blood,dh,hobby,skill,like,born,color,image,st):
+            self.data=[name, age,height,weight,b,w,h,birth,blood,dh,hobby,skill,like,born,color,image,st]
+
+    for i in idol_raw_data:
+        idols.append(idol(i["name"], float(i["age"][:-1]), float(i["height"][:-2]), float(i["weight"][:-2]),
+                float(i["b"][:-2]), float(i["w"][:-2]), float(i["h"][:-2]), i["birth"], i["blood"], i["dh"], i["hobby"], i["skill"], i["like"],i["born"],i["color"],"temp.png",i["status"]))
+    #サジェスト用リスト
+    if(kaisuu==0):
+        for i in idol_raw_data2:
+            autocompleteList.append(i["name1"]) 
+        for i in idol_raw_data2:
+            autocompleteList.append(i["name2"])       
+        for i in idol_raw_data2:
+            autocompleteList.append(i["name3"])  
+    kaisuu=1
+    for i in range(52):
+        idols[i].data[15]=idol_raw_data2[i]["name4"]
     # Tkクラス生成
     root = tk.Tk()
     # 画面サイズ
@@ -444,9 +452,6 @@ def mainroot():
         list_idols=[]
         list_idols=idols
         #リストの初期化できない
-        for i in range(len(idols)):
-            print(idols[i].data[0])
-            
         for j in range(len(chk_bln)-1):
             if chk_bln[j].get():
                 #min>max ありえない話！
@@ -483,9 +488,7 @@ def mainroot():
         
         
         
-    # チェックボタンのラベルをリスト化する
-    chk_txt = ['年齢','身長','体重','バスト','ウェスト','ヒップ','学生区分']
-
+    global chk_txt
     #位置を決める変数
     kijun_x=550
     kijun_y=105
@@ -642,7 +645,7 @@ def mainroot():
     status.set("区分")
     status.place(x=kijun_x+x_marge, y=kijun_y+y_marge*entry_var)
     #最初の画面のボタンの定義
-    button1 = tk.Button(root,text="検索",command=partial(idol_btn,name_box),font=("",15))
+    button1 = tk.Button(root,text="検索",command=lambda:idol_btn(name_box,idols),font=("",15))
     button1.place(x=250, y=200)
 
     button2 = tk.Button(root,text="検索",command=partial(profile_btn,chk_bln),font=("",15))

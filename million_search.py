@@ -5,40 +5,13 @@ import json
 import re
 from PIL import Image, ImageTk
 
-idol_raw_data = None
-idols = []
-autocompleteList =[]
-with open("idol.json",encoding='UTF-8') as file:
-    idol_raw_data = json.load(file)
-    file.close()
-with open("name.json") as file:
-    idol_raw_data2 = json.load(file)
-    file.close()    
-#アイドルの情報
-class idol():
-    def __init__(self, name, age,height,weight,b,w,h,birth,blood,dh,hobby,skill,like,born,color,image,st):
-        self.data=[name, age,height,weight,b,w,h,birth,blood,dh,hobby,skill,like,born,color,image,st]
+   
+# チェックボタンのラベルをリスト化する
+chk_txt = ['年齢','身長','体重','バスト','ウェスト','ヒップ','学生区分']
 
-for i in idol_raw_data:
-    idols.append(
-        idol(i["name"], float(i["age"][:-1]), float(i["height"][:-2]), float(i["weight"][:-2]),
-             float(i["b"][:-2]), float(i["w"][:-2]), float(i["h"][:-2]), i["birth"], i["blood"], i["dh"], i["hobby"], i["skill"], i["like"],i["born"],i["color"],"temp.png",i["status"])
-    )
-#サジェスト用リスト
-for i in idol_raw_data2:
-    autocompleteList.append(i["name1"]) 
-for i in idol_raw_data2:
-    autocompleteList.append(i["name2"])       
-for i in idol_raw_data2:
-    autocompleteList.append(i["name3"])  
-for i in range(52):
-    idols[i].data[15]=idol_raw_data2[i]["name4"]
-# Tkクラス生成
-root = tk.Tk()
-# 画面サイズ
-root.geometry('800x550')
-# 画面タイトル
-root.title('Millionlive!プロフィール検索')
+
+autocompleteList =[]
+
 
 #名前検索、サジェスト
 class AutocompleteEntry(tk.Entry):
@@ -147,200 +120,13 @@ if __name__ == '__main__':
         pattern = re.compile(re.escape(fieldValue) + '.*', re.IGNORECASE)
         return re.match(pattern, acListEntry)
 
-# チェックボタンのラベルをリスト化する
-chk_txt = ['年齢','身長','体重','バスト','ウェスト','ヒップ','学生区分']
-chk_bln = {}
+
 #位置を決める変数
 kijun_x=550
 kijun_y=105
 x_marge=60
 y_marge=50
 entry_var=0
-# チェックボックスON/OFFの状態
-# チェックボタンを動的に作成して配置
-for i in range(len(chk_txt)):
-    chk_bln[i] = tk.BooleanVar()
-    chk = tk.Checkbutton(root, variable=chk_bln[i], text=chk_txt[i],font=("",14)) 
-    chk.place(x=kijun_x-100, y=kijun_y + (i * 50))
-    
-    
-    
-#名前で検索の部分
-name_label=tk.Label(text="アイドル名で検索",font=("",16))
-name_label.place(x=50,y=50)
-
-name_box=AutocompleteEntry(autocompleteList, root, listboxLength=6, width=20, matchesFunction=matches,font=("",18))
-name_box.place(x=50,y=130)
-
-
-
-#プロフィールで検索の部分
-profile_label=tk.Label(text="プロフィールから検索",font=("",16))
-profile_label.place(x=kijun_x-150,y=50)
-
-#ドロップダウンの値を取得
-def select_min0(event):
-    min_get[0]=float(cb_min_st[0].get())
-def select_max0(event):
-    max_get[0]=float(cb_max_st[0].get())
-    
-def select_min1(event):
-    min_get[1]=float(cb_min_st[1].get())
-def select_max1(event):
-    max_get[1]=float(cb_max_st[1].get())
-    
-def select_min2(event):
-    min_get[2]=float(cb_min_st[2].get())
-def select_max2(event):
-    max_get[2]=float(cb_max_st[2].get())
-    
-def select_min3(event):
-    min_get[3]=float(cb_min_st[3].get())
-def select_max3(event):
-    max_get[3]=float(cb_max_st[3].get())
-    
-def select_min4(event):
-    min_get[4]=float(cb_min_st[4].get())
-def select_max4(event):
-    max_get[4]=float(cb_max_st[4].get())
-    
-def select_min5(event):
-    min_get[5]=float(cb_min_st[5].get())
-def select_max5(event):
-    max_get[5]=float(cb_max_st[5].get())
-
-def select_status(event):
-    global status_get
-    status_get=status_var.get()
-#値入力,sはsizeのs
-box_s=12
-nami_s=18
-#下限or上限入力ボックス改訂版
-cb_min_st=[tk.StringVar(),tk.StringVar(),tk.StringVar(),tk.StringVar(),tk.StringVar(),tk.StringVar()]
-cb_max_st=[tk.StringVar(),tk.StringVar(),tk.StringVar(),tk.StringVar(),tk.StringVar(),tk.StringVar()]
-min_get=[0,0,0,0,0,0]
-max_get=[0,0,0,0,0,0]
-min_box=[]
-max_box=[]
-cb_min_st.append(tk.StringVar())
-cb_max_st.append(tk.StringVar())
-
-
-#年齢の下限上限入力    
-min_box.append(ttk.Combobox(root, textvariable=cb_min_st[entry_var],state='readonly',font=("",box_s),width=5))
-min_box[0].bind('<<ComboboxSelected>>' , select_min0)
-min_box[0]["values"]=("10","11","12","13","14","15","16","17","18","19","20","21","22","23","24")
-min_box[0].set("下限")
-min_box[0].place(x=kijun_x, y=kijun_y+y_marge*entry_var)
-    
-label_nami = tk.Label(text="~",font=("",nami_s))
-label_nami.place(x=kijun_x+x_marge+20, y=kijun_y+y_marge*entry_var)
-
-max_box.append(ttk.Combobox(root, textvariable=cb_max_st[entry_var],state='readonly',font=("",box_s),width=5))
-max_box[0].bind('<<ComboboxSelected>>' , select_max0)
-max_box[0]["values"]=("10","11","12","13","14","15","16","17","18","19","20","21","22","23","24")
-max_box[0].set("上限")
-max_box[0].place(x=kijun_x+x_marge*2, y=kijun_y+y_marge*entry_var)
-
-entry_var=entry_var+1
-
-#身長の上限下限入力
-min_box.append(ttk.Combobox(root, textvariable=cb_min_st[entry_var],state='readonly',font=("",box_s),width=5))
-min_box[1].bind('<<ComboboxSelected>>' , select_min1)
-min_box[1]["values"]=("140","141","142","143","144","145","146","147","148","149","150","151","152","153","154","155","156","157","158","159","160","161","162","163","164","165","166","167","168","169")
-min_box[1].set("下限")
-min_box[1].place(x=kijun_x, y=kijun_y+y_marge*entry_var)
-    
-label_nami = tk.Label(text="~",font=("",nami_s))
-label_nami.place(x=kijun_x+x_marge+20, y=kijun_y+y_marge*entry_var)
-
-max_box.append(ttk.Combobox(root, textvariable=cb_max_st[entry_var],state='readonly',font=("",box_s),width=5))
-max_box[1].bind('<<ComboboxSelected>>' , select_max1)
-max_box[1]["values"]=("140","141","142","143","144","145","146","147","148","149","150","151","152","153","154","155","156","157","158","159","160","161","162","163","164","165","166","167","168","169")
-max_box[1].set("上限")
-max_box[1].place(x=kijun_x+x_marge*2, y=kijun_y+y_marge*entry_var)
-
-entry_var=entry_var+1
-
-#体重の上限下限入力
-min_box.append(ttk.Combobox(root, textvariable=cb_min_st[entry_var],state='readonly',font=("",box_s),width=5))
-min_box[2].bind('<<ComboboxSelected>>' , select_min2)
-min_box[2]["values"]=("35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51")
-min_box[2].set("下限")
-min_box[2].place(x=kijun_x, y=kijun_y+y_marge*entry_var)
-    
-label_nami = tk.Label(text="~",font=("",nami_s))
-label_nami.place(x=kijun_x+x_marge+20, y=kijun_y+y_marge*entry_var)
-
-max_box.append(ttk.Combobox(root, textvariable=cb_max_st[entry_var],state='readonly',font=("",box_s),width=5))
-max_box[2].bind('<<ComboboxSelected>>' , select_max2)
-max_box[2]["values"]=("35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51")
-max_box[2].set("上限")
-max_box[2].place(x=kijun_x+x_marge*2, y=kijun_y+y_marge*entry_var)
-
-entry_var=entry_var+1
-
-#Bの上限下限入力
-min_box.append(ttk.Combobox(root, textvariable=cb_min_st[entry_var],state='readonly',font=("",box_s),width=5))
-min_box[3].bind('<<ComboboxSelected>>' , select_min3)
-min_box[3]["values"]=("72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93")
-min_box[3].set("下限")
-min_box[3].place(x=kijun_x, y=kijun_y+y_marge*entry_var)
-    
-label_nami = tk.Label(text="~",font=("",nami_s))
-label_nami.place(x=kijun_x+x_marge+20, y=kijun_y+y_marge*entry_var)
-
-max_box.append(ttk.Combobox(root, textvariable=cb_max_st[entry_var],state='readonly',font=("",box_s),width=5))
-max_box[3].bind('<<ComboboxSelected>>' , select_max3)
-max_box[3]["values"]=("72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93")
-max_box[3].set("上限")
-max_box[3].place(x=kijun_x+x_marge*2, y=kijun_y+y_marge*entry_var)
-
-entry_var=entry_var+1
-
-#Wの上限下限入力
-min_box.append(ttk.Combobox(root, textvariable=cb_min_st[entry_var],state='readonly',font=("",box_s),width=5))
-min_box[4].bind('<<ComboboxSelected>>' , select_min4)
-min_box[4]["values"]=("51","52","53","54","55","56","57","58","59","60","61","62","63")
-min_box[4].set("下限")
-min_box[4].place(x=kijun_x, y=kijun_y+y_marge*entry_var)
-    
-label_nami = tk.Label(text="~",font=("",nami_s))
-label_nami.place(x=kijun_x+x_marge+20, y=kijun_y+y_marge*entry_var)
-
-max_box.append(ttk.Combobox(root, textvariable=cb_max_st[entry_var],state='readonly',font=("",box_s),width=5))
-max_box[4].bind('<<ComboboxSelected>>' , select_max4)
-max_box[4]["values"]=("51","52","53","54","55","56","57","58","59","60","61","62","63")
-max_box[4].set("上限")
-max_box[4].place(x=kijun_x+x_marge*2, y=kijun_y+y_marge*entry_var)
-
-entry_var=entry_var+1
-
-#Hの上限下限入力
-min_box.append(ttk.Combobox(root, textvariable=cb_min_st[entry_var],state='readonly',font=("",box_s),width=5))
-min_box[5].bind('<<ComboboxSelected>>' , select_min5)
-min_box[5]["values"]=("73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92")
-min_box[5].set("下限")
-min_box[5].place(x=kijun_x, y=kijun_y+y_marge*entry_var)
-    
-label_nami = tk.Label(text="~",font=("",nami_s))
-label_nami.place(x=kijun_x+x_marge+20, y=kijun_y+y_marge*entry_var)
-
-max_box.append(ttk.Combobox(root, textvariable=cb_max_st[entry_var],state='readonly',font=("",box_s),width=5))
-max_box[5].bind('<<ComboboxSelected>>' , select_max5)
-max_box[5]["values"]=("73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92")
-max_box[5].set("上限")
-max_box[5].place(x=kijun_x+x_marge*2, y=kijun_y+y_marge*entry_var)
-
-entry_var=entry_var+1
-
-status_var=tk.StringVar()
-
-status=ttk.Combobox(root, textvariable=status_var,state='readonly',font=("",box_s+4),width=8)
-status.bind('<<ComboboxSelected>>' , select_status)
-status["values"]=("小学生","中学生","高校生","その他")
-status.set("区分")
-status.place(x=kijun_x+x_marge, y=kijun_y+y_marge*entry_var)
 
 #並び替えの時に使う
 show_size=[]
@@ -366,10 +152,11 @@ def idol_pr_show(idol):
     
 
 #アイドルボタンの挙動
-def idol_btn():
+def idol_btn(name_box,idols):
     for i in range(0,len(idols)):
         idol_name=name_box.get()
         #アイドル検索の方で新しいウィンドウを作る
+        global autocompleteList
         if(idol_name==idols[i].data[0] or idol_name==autocompleteList[i] or idol_name==autocompleteList[i+52] or idol_name==autocompleteList[i+52*2]):
             idol_pr_show(idols[i])
             break
@@ -382,6 +169,7 @@ def tintin_select(min_get,max_get,seiheki,list_idols):
     global flag
     min_place=0
     max_place=0
+    flag="false"
     #min=max
     if(min_get==max_get):
         for t in range(len(list_idols)):
@@ -418,46 +206,13 @@ def tintin_select(min_get,max_get,seiheki,list_idols):
                 for i in range(max_place,end):
                     list_idols.pop(-1)
 
-#絞り込みボタン
-def profile_btn():
-    global flag
-    flag="false"
-    list_idols=idols
-    for j in range(len(chk_bln)-1):
-        if chk_bln[j].get():
-            #min>max ありえない話！
-            if(int(min_get[j])>int(max_get[j])):
-                warning()
-                flag="true"
-                break
-            for s in range(len(list_idols)-1):
-                for t in range(s,len(list_idols)):
-                    if(float(list_idols[s].data[j+1])>float(list_idols[t].data[j+1])):
-                        swap=list_idols[s]
-                        list_idols[s]=list_idols[t]
-                        list_idols[t]=swap
-            tintin_select(min_get[j],max_get[j],j+1,list_idols)
-            if(flag=="true"):
-                break
-    if(flag=="true"):
-        warning()
-        return
-    if chk_bln[6].get():
-        length=len(list_idols)
-        for i in range(length):
-            if(list_idols[length-1-i].data[16]!=status_get):
-                list_idols.pop(length-1-i)
-        if(len(list_idols)==0):
-            flag="true"
-    if(flag=="true"):
-        warning()
-        return
-    idol_show(list_idols)
+
 
 #並び替えボタン    
 def change_order(list_idols):
     global kind
     global up_or_down
+    global chk_txt
     orderby=0
     for i in range(len(chk_txt)):
         if(chk_txt[i]==kind):
@@ -515,7 +270,8 @@ def idol_button(list_idols):
     #名前が長くて隣と重なるので短く
             if(list_idols[i].data[0]=="エミリースチュアート"):
                 list_idols[i].data[0]="エミリー"
-            idols_name.append(idol)
+                #怪しい
+            idols_name.append([])
             idols_name[i]=tk.Button(root2,command=partial(idol_pr_show,list_idols[i]),text=list_idols[i].data[0],background=list_idols[i].data[14],font=("",14))
             #表示の時は戻す
             if(list_idols[i].data[0]=="エミリー"):
@@ -525,7 +281,7 @@ def idol_button(list_idols):
     
     
 #絞り込み結果表示
-def idol_show(list_idols):
+def idol_show(list_idols,root):
     #ウィンドウ表示
     root.destroy()
     #新規ウィンドウの中身
@@ -595,7 +351,12 @@ def idol_show(list_idols):
     updown_cb["values"]=("小さい順","大きい順")
     updown_cb.set("順番")
     updown_cb.place(x=combo_placex+180,y=combo_placey)
-    
+        
+    def NHK():
+        root3.destroy()
+        mainroot()
+    back_btn=tk.Button(root2,command=NHK,text="検索画面に戻る",font=("",18))
+    back_btn.place(x=combo_placex-380,y=combo_placey-30)
     
     #並び変えボタン
     change_btn=tk.Button(root2,command=partial(change_order,list_idols),text="実行",font=("",18))
@@ -607,12 +368,289 @@ def idol_show(list_idols):
 def warning():
     message=tk.messagebox.showinfo("警告","条件に合うアイドルは存在しません")
     
-#最初の画面のボタンの定義
-button1 = tk.Button(text="検索",command=idol_btn,font=("",15))
-button1.place(x=250, y=200)
+kaisuu=0
+global list_idols
+def mainroot():
+    idol_raw_data = None
+    global autocompleteList
+    global kaisuu
+    with open("idol.json",encoding='UTF-8') as file:
+        idol_raw_data = json.load(file)
+        file.close()
+    with open("name.json") as file:
+        idol_raw_data2 = json.load(file)
+        file.close() 
+    idols=[]
+    #アイドルの情報
+    class idol():
+        def __init__(self, name, age,height,weight,b,w,h,birth,blood,dh,hobby,skill,like,born,color,image,st):
+            self.data=[name, age,height,weight,b,w,h,birth,blood,dh,hobby,skill,like,born,color,image,st]
 
-button2 = tk.Button(text="検索",command=profile_btn,font=("",15))
-button2.place(x=kijun_x+150, y=kijun_y+350)
+    for i in idol_raw_data:
+        idols.append(idol(i["name"], float(i["age"][:-1]), float(i["height"][:-2]), float(i["weight"][:-2]),
+                float(i["b"][:-2]), float(i["w"][:-2]), float(i["h"][:-2]), i["birth"], i["blood"], i["dh"], i["hobby"], i["skill"], i["like"],i["born"],i["color"],"temp.png",i["status"]))
+    #サジェスト用リスト
+    if(kaisuu==0):
+        for i in idol_raw_data2:
+            autocompleteList.append(i["name1"]) 
+        for i in idol_raw_data2:
+            autocompleteList.append(i["name2"])       
+        for i in idol_raw_data2:
+            autocompleteList.append(i["name3"])  
+    kaisuu=1
+    for i in range(52):
+        idols[i].data[15]=idol_raw_data2[i]["name4"]
+    # Tkクラス生成
+    root = tk.Tk()
+    # 画面サイズ
+    root.geometry('800x550')
+    # 画面タイトル
+    root.title('Millionlive!プロフィール検索')
+    global min_get
+    min_get=[0,0,0,0,0,0]
+    global max_get
+    max_get=[0,0,0,0,0,0]
+    #ドロップダウンの値を取得
+    def select_min0(event):
+        min_get[0]=float(cb_min_st[0].get())
+    def select_max0(event):
+        max_get[0]=float(cb_max_st[0].get())
+    
+    def select_min1(event):
+        min_get[1]=float(cb_min_st[1].get())
+    def select_max1(event):
+        max_get[1]=float(cb_max_st[1].get())
+    
+    def select_min2(event):
+        min_get[2]=float(cb_min_st[2].get())
+    def select_max2(event):
+        max_get[2]=float(cb_max_st[2].get())
+    
+    def select_min3(event):
+        min_get[3]=float(cb_min_st[3].get())
+    def select_max3(event):
+        max_get[3]=float(cb_max_st[3].get())
+    
+    def select_min4(event):
+        min_get[4]=float(cb_min_st[4].get())
+    def select_max4(event):
+        max_get[4]=float(cb_max_st[4].get())
+    
+    def select_min5(event):
+        min_get[5]=float(cb_min_st[5].get())
+    def select_max5(event):
+        max_get[5]=float(cb_max_st[5].get())
+
+    def select_status(event):
+        global status_get
+        status_get=status_var.get()
+
+    #絞り込みボタン
+    def profile_btn(chk_bln):
+        global flag
+        flag="false"
+        list_idols=[]
+        list_idols=idols
+        #リストの初期化できない
+        for j in range(len(chk_bln)-1):
+            if chk_bln[j].get():
+                #min>max ありえない話！
+                if(int(min_get[j])>int(max_get[j])):
+                    warning()
+                    flag="true"
+                    break
+                for s in range(len(list_idols)-1):
+                    for t in range(s,len(list_idols)):
+                        if(float(list_idols[s].data[j+1])>float(list_idols[t].data[j+1])):
+                            swap=list_idols[s]
+                            list_idols[s]=list_idols[t]
+                            list_idols[t]=swap
+                tintin_select(min_get[j],max_get[j],j+1,list_idols)
+                if(flag=="true"):
+                    break
+        if(flag=="true"):
+            warning()
+            return
+        if chk_bln[6].get():
+            length=len(list_idols)
+            for i in range(length):
+                if(list_idols[length-1-i].data[16]!=status_get):
+                    list_idols.pop(length-1-i)
+            if(len(list_idols)==0):
+                flag="true"
+        if(flag=="true"):
+            warning()
+            return
+
+        idol_show(list_idols,root)        
+        
+        
+        
+        
+        
+    global chk_txt
+    #位置を決める変数
+    kijun_x=550
+    kijun_y=105
+    x_marge=60
+    y_marge=50
+    entry_var=0
+    chk_bln={}
+    # チェックボックスON/OFFの状態
+    # チェックボタンを動的に作成して配置
+    for i in range(len(chk_txt)):
+        chk_bln[i] = tk.BooleanVar()
+        chk = tk.Checkbutton(root, variable=chk_bln[i], text=chk_txt[i],font=("",14)) 
+        chk.place(x=kijun_x-100, y=kijun_y + (i * 50))
+    
+    
+    #名前で検索の部分
+    name_label=tk.Label(text="アイドル名で検索",font=("",16))
+    name_label.place(x=50,y=50)
+
+    name_box=AutocompleteEntry(autocompleteList, root, listboxLength=6, width=20, matchesFunction=matches,font=("",18))
+    name_box.place(x=50,y=130)
+
+    #プロフィールで検索の部分
+    profile_label=tk.Label(text="プロフィールから検索",font=("",16))
+    profile_label.place(x=kijun_x-150,y=50)
 
 
-root.mainloop()
+    #値入力,sはsizeのs
+    box_s=12
+    nami_s=18
+    #下限or上限入力ボックス改訂版
+    cb_min_st=[tk.StringVar(),tk.StringVar(),tk.StringVar(),tk.StringVar(),tk.StringVar(),tk.StringVar()]
+    cb_max_st=[tk.StringVar(),tk.StringVar(),tk.StringVar(),tk.StringVar(),tk.StringVar(),tk.StringVar()]
+    min_box=[]
+    max_box=[]
+
+    cb_min_st.append(tk.StringVar())
+    cb_max_st.append(tk.StringVar())
+
+
+    #年齢の下限上限入力    
+    min_box.append(ttk.Combobox(root, textvariable=cb_min_st[entry_var],state='readonly',font=("",box_s),width=5))
+    min_box[0].bind('<<ComboboxSelected>>' , select_min0)
+    min_box[0]["values"]=("10","11","12","13","14","15","16","17","18","19","20","21","22","23","24")
+    min_box[0].set("下限")
+    min_box[0].place(x=kijun_x, y=kijun_y+y_marge*entry_var)
+    
+    label_nami = tk.Label(text="~",font=("",nami_s))
+    label_nami.place(x=kijun_x+x_marge+20, y=kijun_y+y_marge*entry_var)
+
+    max_box.append(ttk.Combobox(root, textvariable=cb_max_st[entry_var],state='readonly',font=("",box_s),width=5))
+    max_box[0].bind('<<ComboboxSelected>>' , select_max0)
+    max_box[0]["values"]=("10","11","12","13","14","15","16","17","18","19","20","21","22","23","24")
+    max_box[0].set("上限")
+    max_box[0].place(x=kijun_x+x_marge*2, y=kijun_y+y_marge*entry_var)
+
+    entry_var=entry_var+1
+
+    #身長の上限下限入力
+    min_box.append(ttk.Combobox(root, textvariable=cb_min_st[entry_var],state='readonly',font=("",box_s),width=5))
+    min_box[1].bind('<<ComboboxSelected>>' , select_min1)
+    min_box[1]["values"]=("140","141","142","143","144","145","146","147","148","149","150","151","152","153","154","155","156","157","158","159","160","161","162","163","164","165","166","167","168","169")
+    min_box[1].set("下限")
+    min_box[1].place(x=kijun_x, y=kijun_y+y_marge*entry_var)
+    
+    label_nami = tk.Label(text="~",font=("",nami_s))
+    label_nami.place(x=kijun_x+x_marge+20, y=kijun_y+y_marge*entry_var)
+
+    max_box.append(ttk.Combobox(root, textvariable=cb_max_st[entry_var],state='readonly',font=("",box_s),width=5))
+    max_box[1].bind('<<ComboboxSelected>>' , select_max1)
+    max_box[1]["values"]=("140","141","142","143","144","145","146","147","148","149","150","151","152","153","154","155","156","157","158","159","160","161","162","163","164","165","166","167","168","169")
+    max_box[1].set("上限")
+    max_box[1].place(x=kijun_x+x_marge*2, y=kijun_y+y_marge*entry_var)
+
+    entry_var=entry_var+1
+
+    #体重の上限下限入力
+    min_box.append(ttk.Combobox(root, textvariable=cb_min_st[entry_var],state='readonly',font=("",box_s),width=5))
+    min_box[2].bind('<<ComboboxSelected>>' , select_min2)
+    min_box[2]["values"]=("35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51")
+    min_box[2].set("下限")
+    min_box[2].place(x=kijun_x, y=kijun_y+y_marge*entry_var)
+    
+    label_nami = tk.Label(text="~",font=("",nami_s))
+    label_nami.place(x=kijun_x+x_marge+20, y=kijun_y+y_marge*entry_var)
+
+    max_box.append(ttk.Combobox(root, textvariable=cb_max_st[entry_var],state='readonly',font=("",box_s),width=5))
+    max_box[2].bind('<<ComboboxSelected>>' , select_max2)
+    max_box[2]["values"]=("35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51")
+    max_box[2].set("上限")
+    max_box[2].place(x=kijun_x+x_marge*2, y=kijun_y+y_marge*entry_var)
+
+    entry_var=entry_var+1
+
+    #Bの上限下限入力
+    min_box.append(ttk.Combobox(root, textvariable=cb_min_st[entry_var],state='readonly',font=("",box_s),width=5))
+    min_box[3].bind('<<ComboboxSelected>>' , select_min3)
+    min_box[3]["values"]=("72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93")
+    min_box[3].set("下限")
+    min_box[3].place(x=kijun_x, y=kijun_y+y_marge*entry_var)
+    
+    label_nami = tk.Label(text="~",font=("",nami_s))
+    label_nami.place(x=kijun_x+x_marge+20, y=kijun_y+y_marge*entry_var)
+
+    max_box.append(ttk.Combobox(root, textvariable=cb_max_st[entry_var],state='readonly',font=("",box_s),width=5))
+    max_box[3].bind('<<ComboboxSelected>>' , select_max3)
+    max_box[3]["values"]=("72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93")
+    max_box[3].set("上限")
+    max_box[3].place(x=kijun_x+x_marge*2, y=kijun_y+y_marge*entry_var)
+
+    entry_var=entry_var+1
+
+    #Wの上限下限入力
+    min_box.append(ttk.Combobox(root, textvariable=cb_min_st[entry_var],state='readonly',font=("",box_s),width=5))
+    min_box[4].bind('<<ComboboxSelected>>' , select_min4)
+    min_box[4]["values"]=("51","52","53","54","55","56","57","58","59","60","61","62","63")
+    min_box[4].set("下限")
+    min_box[4].place(x=kijun_x, y=kijun_y+y_marge*entry_var)
+    
+    label_nami = tk.Label(text="~",font=("",nami_s))
+    label_nami.place(x=kijun_x+x_marge+20, y=kijun_y+y_marge*entry_var)
+
+    max_box.append(ttk.Combobox(root, textvariable=cb_max_st[entry_var],state='readonly',font=("",box_s),width=5))
+    max_box[4].bind('<<ComboboxSelected>>' , select_max4)
+    max_box[4]["values"]=("51","52","53","54","55","56","57","58","59","60","61","62","63")
+    max_box[4].set("上限")
+    max_box[4].place(x=kijun_x+x_marge*2, y=kijun_y+y_marge*entry_var)
+
+    entry_var=entry_var+1
+
+    #Hの上限下限入力
+    min_box.append(ttk.Combobox(root, textvariable=cb_min_st[entry_var],state='readonly',font=("",box_s),width=5))
+    min_box[5].bind('<<ComboboxSelected>>' , select_min5)
+    min_box[5]["values"]=("73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92")
+    min_box[5].set("下限")
+    min_box[5].place(x=kijun_x, y=kijun_y+y_marge*entry_var)
+    
+    label_nami = tk.Label(text="~",font=("",nami_s))
+    label_nami.place(x=kijun_x+x_marge+20, y=kijun_y+y_marge*entry_var)
+
+    max_box.append(ttk.Combobox(root, textvariable=cb_max_st[entry_var],state='readonly',font=("",box_s),width=5))
+    max_box[5].bind('<<ComboboxSelected>>' , select_max5)
+    max_box[5]["values"]=("73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92")
+    max_box[5].set("上限")
+    max_box[5].place(x=kijun_x+x_marge*2, y=kijun_y+y_marge*entry_var)
+
+    entry_var=entry_var+1
+
+    status_var=tk.StringVar()
+
+    status=ttk.Combobox(root, textvariable=status_var,state='readonly',font=("",box_s+4),width=8)
+    status.bind('<<ComboboxSelected>>' , select_status)
+    status["values"]=("小学生","中学生","高校生","その他")
+    status.set("区分")
+    status.place(x=kijun_x+x_marge, y=kijun_y+y_marge*entry_var)
+    #最初の画面のボタンの定義
+    button1 = tk.Button(root,text="検索",command=lambda:idol_btn(name_box,idols),font=("",15))
+    button1.place(x=250, y=200)
+
+    button2 = tk.Button(root,text="検索",command=partial(profile_btn,chk_bln),font=("",15))
+    button2.place(x=kijun_x+150, y=kijun_y+350)
+    
+    root.mainloop()
+
+mainroot()
