@@ -177,8 +177,8 @@ def tintin_select(min_get,max_get,seiheki,list_idols):
                 min_place=t-1
                 break
         for s in range(len(list_idols)):
-            if(float(max_get)==list_idols[len(idols)-s-1].data[seiheki]):
-                max_place=len(idols)-s
+            if(float(max_get)==list_idols[len(list_idols)-s-1].data[seiheki]):
+                max_place=len(list_idols)-s
                 break
     #min!=max
     if(min_get!=max_get):
@@ -242,9 +242,10 @@ def change_order(list_idols):
     global count
     placex=70
     placey=220
+    #ここです！！！！！！！！！！！！！！
     if(count!=0):
         for i in range(len(show_size)):
-            show_size[i].place_forget()
+            show_size[i].place(x=10000,y=10000)
     show_size=[]
     if(orderby==1):
         for i in range(len(list_idols)):
@@ -354,6 +355,8 @@ def idol_show(list_idols,root):
         
     def NHK():
         root3.destroy()
+        global count 
+        count=0
         mainroot()
     back_btn=tk.Button(root2,command=NHK,text="検索画面に戻る",font=("",18))
     back_btn.place(x=combo_placex-380,y=combo_placey-30)
